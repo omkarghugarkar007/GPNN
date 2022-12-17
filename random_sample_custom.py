@@ -101,11 +101,13 @@ if 'cams for sanity check' and False:
     cams = sanity_cams
     cams = tensor_to_numpy(cams)
     # cams =  np.ones(cams.shape)
-assert cams.ndim == 3,'cams.ndim == 3'
+assert cams.ndim == 4,'cams.ndim == 3'
 #==============================================
 for ii,ci in enumerate(cams):
     # assert ci.shape[-1] == 3
     # img_save(tensor_to_numpy(ci), 'cam'+model.out_file[:-len('.png')] + str(ii) + '.png' )
+    #ci = np.array(ci)
+    ci = ci.astype(int)
     img_save(ci, 'cam'+model.out_file[:-len('.png')] + str(ii) + '.png' )
 # output_im = skimage.io.imread(output_imname)
 #====================================================
@@ -151,8 +153,8 @@ elif I.shape[0]//model.batch_size == (cams.shape[-2]) * (cams.shape[-1]):
     dummy_shape = (cams.shape[-2],cams.shape[-1],1)
     cropped_cams = cams
 
-augmented_dummy = arrange(dummy,I,dummy_shape
-                          )
+augmented_dummy = arrange(dummy,I,dummy_shape)
+
 dummy1 = torch.ones(model.batch_size,*valid_shape_for_ps1,1).to(device).requires_grad_(True)
 augmented_dummy1 = arrange(dummy1,I,
                           dummy_shape)
