@@ -31,16 +31,26 @@ def normalize_tensor(t,vgg_mean=[0.485, 0.456, 0.406],
 def gradcam(img_tensor,target = None,target_layers=target_layers):
     
     input_tensor = normalize_tensor(img_tensor)
-    
-    targets = [ClassifierOutputTarget(target) for _ in range(img_tensor.shape[0])]
     with GradCAM(model=model,
                 target_layers=target_layers,
                 use_cuda= ('cuda' in str(img_tensor.device))) as cam:
 
         cam.batch_size = 32
         grayscale_cam0 = cam(input_tensor=input_tensor,
-                            targets=targets)
-    return grayscale_cam0
+                            targets=None)
+        
+        cam_image = np.zeros((input_tensor.shape[0],input_tensor.shape[2],input_tensor.shape[3],3))
+
+        for i in range(input_tensor.shape[0]):
+            grayscale_cam = grayscale_cam0[i, :]
+            rgb_img = img_tensor[i].cpu()
+            rgb_img = np.float32(rgb_img) / 255
+            rgb_img = rgb_img[:, :, ::-1]
+            rgb_img = np.reshape(rgb_img, (rgb_img.shape[1],-1,3))
+            img = show_cam_on_image(rgb_img, grayscale_cam, use_rgb=True)
+            cam_image[i] = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        
+    return cam_image
 
 if __name__ == '__main__':
     model = resnet50(pretrained=True)
